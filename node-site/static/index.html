@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>论文分析助手</title>
+    <link rel="stylesheet" href="./assets/css/index.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">
+                    <i class="fas fa-file-alt"></i>
+                    论文分析助手
+                </h1>
+                <nav class="nav">
+                    <button class="nav-btn active" data-tab="upload">上传论文</button>
+                    <button class="nav-btn" data-tab="papers">我的论文</button>
+                    <button class="nav-btn" data-tab="chat">智能问答</button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main">
+            <!-- 上传论文页面 -->
+            <div id="upload-tab" class="tab-content active">
+                <div class="upload-section">
+                    <div class="upload-card">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h2>上传学术论文</h2>
+                        <p>支持PDF格式，文件大小不超过50MB</p>
+
+                        <div class="upload-area" id="upload-area">
+                            <input type="file" id="file-input" accept=".pdf" hidden>
+                            <div class="upload-placeholder">
+                                <i class="fas fa-plus"></i>
+                                <span>点击或拖拽文件到此处</span>
+                            </div>
+                        </div>
+
+                        <div class="upload-progress" id="upload-progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <span class="progress-text" id="progress-text">上传中...</span>
+                        </div>
+
+                        <button class="btn btn-primary" id="upload-btn" disabled>
+                            <i class="fas fa-upload"></i>
+                            开始上传
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 我的论文页面 -->
+            <div id="papers-tab" class="tab-content">
+                <div class="papers-section">
+                    <div class="section-header">
+                        <h2>我的论文</h2>
+                        <button class="btn btn-secondary" id="refresh-papers">
+                            <i class="fas fa-sync-alt"></i>
+                            刷新
+                        </button>
+                    </div>
+
+                    <div class="papers-grid" id="papers-grid">
+                        <!-- 论文卡片将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 智能问答页面 -->
+            <div id="chat-tab" class="tab-content">
+                <div class="chat-section">
+                    <div class="chat-header">
+                        <h2>智能问答</h2>
+                        <select id="paper-select" class="paper-select">
+                            <option value="">选择论文...</option>
+                        </select>
+                    </div>
+
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="welcome-message">
+                                <i class="fas fa-robot"></i>
+                                <p>您好！我是您的论文分析助手。请先选择一篇论文，然后您可以向我提问关于论文的任何问题。</p>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-area">
+                            <div class="chat-input-container">
+                                <input type="text" id="chat-input" placeholder="请输入您的问题..." disabled>
+                                <button id="send-btn" class="send-btn" disabled>
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 论文详情模态框 -->
+        <div id="paper-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">论文详情</h3>
+                    <button class="modal-close" id="modal-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="paper-details">
+                        <div class="detail-section">
+                            <h4><i class="fas fa-info-circle"></i> 基本信息</h4>
+                            <div class="detail-content">
+                                <p><strong>标题：</strong><span id="detail-title"></span></p>
+                                <p><strong>作者：</strong><span id="detail-authors"></span></p>
+                                <p><strong>上传时间：</strong><span id="detail-upload-time"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4><i class="fas fa-file-text"></i> 摘要</h4>
+                            <div class="detail-content">
+                                <p id="detail-abstract"></p>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4><i class="fas fa-lightbulb"></i> 简明摘要</h4>
+                            <div class="detail-content">
+                                <p id="detail-summary"></p>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4><i class="fas fa-key"></i> 关键内容</h4>
+                            <div class="detail-content">
+                                <pre id="detail-key-content"></pre>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4><i class="fas fa-language"></i> 中文翻译</h4>
+                            <div class="detail-content">
+                                <p id="detail-translation"></p>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4><i class="fas fa-book"></i> 术语解释</h4>
+                            <div class="detail-content">
+                                <pre id="detail-terminology"></pre>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4><i class="fas fa-project-diagram"></i> 研究脉络</h4>
+                            <div class="detail-content">
+                                <pre id="detail-research-context"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载提示 -->
+        <div id="loading" class="loading" style="display: none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>正在处理中，请稍候...</p>
+            </div>
+        </div>
+
+        <!-- 通知提示 -->
+        <div id="notification" class="notification">
+            <div class="notification-content">
+                <span id="notification-text"></span>
+                <button id="notification-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/index.js"></script>
+</body>
+</html>
+

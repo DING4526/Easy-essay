@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>论文分析助手</title>
     <link rel="stylesheet" href="./assets/css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
 </head>
 <body>
     <div class="container">
@@ -18,7 +19,6 @@
                 <nav class="nav">
                     <button class="nav-btn active" data-tab="upload">上传论文</button>
                     <button class="nav-btn" data-tab="papers">我的论文</button>
-                    <button class="nav-btn" data-tab="chat">智能问答</button>
                 </nav>
             </div>
         </header>
@@ -74,29 +74,81 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 智能问答页面 -->
-            <div id="chat-tab" class="tab-content">
-                <div class="chat-section">
-                    <div class="chat-header">
-                        <h2>智能问答</h2>
-                        <select id="paper-select" class="paper-select">
-                            <option value="">选择论文...</option>
-                        </select>
+            
+        <!-- 论文阅读与问答整合视图 -->
+        <div id="viewer-tab" class="tab-content">
+            <div class="viewer-wrapper">
+                <div class="pdf-pane">
+                    <iframe id="pdf-frame" src="" frameborder="0"></iframe>
+                </div>
+                <div class="details-pane">
+                <!--  上半部分  --> 
+                  <div class="info-pane">
+                    <div class="viewer-nav">
+                        <button class="viewer-tab-btn active" data-target="basic">基本信息</button>
+                        <button class="viewer-tab-btn" data-target="abstract">摘要</button>
+                        <button class="viewer-tab-btn" data-target="key">关键内容</button>
+                        <button class="viewer-tab-btn" data-target="translation">中文翻译</button>
+                        <button class="viewer-tab-btn" data-target="terminology">术语解释</button>
+                        <button class="viewer-tab-btn" data-target="research-context">研究脉络</button>
+                    </div>
+                    
+                    <div class="viewer-section" data-section="basic" style="display: block;">
+                        <div class="detail-section">
+                        <h3 id="viewer-title"></h3>
+                        <p><strong>作者：</strong><span id="viewer-authors"></span></p>
+                        <p><strong>上传时间：</strong><span id="viewer-upload-time"></span></p>
+                        </div>
                     </div>
 
+                    <div class="viewer-section" data-section="abstract" style="display: none;">
+                        <div class="detail-section">
+                        <h4>摘要</h4>
+                        <p id="viewer-abstract"></p>
+                        </div>
+                    </div>
+
+                    <div class="viewer-section" data-section="key" style="display: none;">
+                        <div class="detail-section">
+                        <h4>关键内容</h4>
+                        <pre id="viewer-key-content"></pre>
+                        </div>
+                    </div>
+
+                    <div class="viewer-section" data-section="translation" style="display: none;">
+                        <div class="detail-section">
+                        <h4>中文翻译</h4>
+                        <p id="viewer-translation"></p>
+                        </div>
+                    </div>
+
+                    <div class="viewer-section" data-section="terminology" style="display: none;">
+                        <div class="detail-section">
+                        <h4>术语解释</h4>
+                        <pre id="viewer-terminology"></pre>
+                        </div>
+                    </div>
+
+                    <div class="viewer-section" data-section="research-context" style="display: none;">
+                        <div class="detail-section">
+                        <h4>研究脉络</h4>
+                        <pre id="viewer-research-context"></pre>
+                        </div>
+                    </div>
+                </div>    
+                    <!-- 问答框  -->
                     <div class="chat-container">
                         <div class="chat-messages" id="chat-messages">
                             <div class="welcome-message">
                                 <i class="fas fa-robot"></i>
-                                <p>您好！我是您的论文分析助手。请先选择一篇论文，然后您可以向我提问关于论文的任何问题。</p>
+                                <p>您好！我是您的论文分析助手。您可以向我提问关于论文的任何问题。</p>
                             </div>
                         </div>
 
                         <div class="chat-input-area">
                             <div class="chat-input-container">
-                                <input type="text" id="chat-input" placeholder="请输入您的问题..." disabled>
-                                <button id="send-btn" class="send-btn" disabled>
+                                <input type="text" id="chat-input" placeholder="请输入您的问题...">
+                                <button id="send-btn" class="send-btn">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
@@ -104,74 +156,9 @@
                     </div>
                 </div>
             </div>
+        </div>
         </main>
 
-        <!-- 论文详情模态框 -->
-        <div id="paper-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="modal-title">论文详情</h3>
-                    <button class="modal-close" id="modal-close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="paper-details">
-                        <div class="detail-section">
-                            <h4><i class="fas fa-info-circle"></i> 基本信息</h4>
-                            <div class="detail-content">
-                                <p><strong>标题：</strong><span id="detail-title"></span></p>
-                                <p><strong>作者：</strong><span id="detail-authors"></span></p>
-                                <p><strong>上传时间：</strong><span id="detail-upload-time"></span></p>
-                            </div>
-                        </div>
-
-                        <div class="detail-section">
-                            <h4><i class="fas fa-file-text"></i> 摘要</h4>
-                            <div class="detail-content">
-                                <p id="detail-abstract"></p>
-                            </div>
-                        </div>
-
-                        <div class="detail-section">
-                            <h4><i class="fas fa-lightbulb"></i> 简明摘要</h4>
-                            <div class="detail-content">
-                                <p id="detail-summary"></p>
-                            </div>
-                        </div>
-
-                        <div class="detail-section">
-                            <h4><i class="fas fa-key"></i> 关键内容</h4>
-                            <div class="detail-content">
-                                <pre id="detail-key-content"></pre>
-                            </div>
-                        </div>
-
-                        <div class="detail-section">
-                            <h4><i class="fas fa-language"></i> 中文翻译</h4>
-                            <div class="detail-content">
-                                <p id="detail-translation"></p>
-                            </div>
-                        </div>
-
-                        <div class="detail-section">
-                            <h4><i class="fas fa-book"></i> 术语解释</h4>
-                            <div class="detail-content">
-                                <pre id="detail-terminology"></pre>
-                            </div>
-                        </div>
-
-                        <div class="detail-section">
-                            <h4><i class="fas fa-project-diagram"></i> 研究脉络</h4>
-                            <div class="detail-content">
-                                <pre id="detail-research-context"></pre>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- 加载提示 -->
         <div id="loading" class="loading" style="display: none;">
@@ -193,6 +180,8 @@
     </div>
 
     <script src="assets/js/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 </body>
 </html>
 

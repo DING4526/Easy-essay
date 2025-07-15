@@ -293,9 +293,11 @@ body {
     border-top: 1px solid #e5e7eb;
 }
 
+
 .chat-input-container {
     display: flex;
     gap: 0.5rem;
+     width: 100%;       
 }
 
 .chat-input-container input {
@@ -486,3 +488,137 @@ body {
     }
 }
 
+/*.viewer-wrapper {
+    display: flex;
+    height: 100%;
+}
+
+.pdf-pane {
+    flex: 1;
+    border-right: 1px solid #ccc;
+    padding: 0.5rem;
+}
+
+.pdf-pane iframe {
+    width: 100%;
+    height: 100%;
+}
+
+.details-pane {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}*/
+
+.viewer-wrapper {
+  display: flex;
+  height: calc(100vh - 100px); /* 根据你顶部内容调整 */
+}
+
+/* 左侧 PDF 区域 */
+.pdf-pane {
+  width: 50%;
+  border-right: 1px solid #ccc;
+}
+
+.pdf-pane iframe {
+  width: 100%;
+  height: 100%;
+}
+
+/* 右侧详情区域 */
+.details-pane {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%; /* 使上下能按 50% 分配 */
+}
+
+/* ✅ 上半部分：信息展示区 */
+.info-pane {
+  flex: 0 0 50%;           /* 固定占 50% 高度 */
+  overflow-y: auto;        /* 超出滚动 */
+  border-bottom: 1px solid #ccc;
+  padding: 0.5rem;
+}
+
+/* ✅ 下半部分：问答区域 */
+.chat-container {
+  flex: 0 0 50%;           /* 固定占 50% 高度 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0.5rem;
+}
+
+/* 聊天消息区，内容可滚动 */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+/* 聊天输入区 */
+.chat-input-area {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 8px;
+}
+
+.chat-input-area button {
+  padding: 8px 12px;
+}
+
+.viewer-nav {
+    display: flex;
+    width: 100%;
+    background: #f1f5f9;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 25px;
+    border: 1px solid #e2e8f0;
+    }
+        
+.viewer-tab-btn {
+    flex: 1;
+    padding: 12px 5px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #475569;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+        
+.viewer-tab-btn:not(:last-child) {
+    border-right: 1px solid #e2e8f0;
+}
+        
+.viewer-tab-btn:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+        
+.viewer-tab-btn.active {
+    background: #2563eb;
+    color: white;
+    font-weight: 600;
+}
+        
+.viewer-tab-btn.active:hover {
+    background: #1d4ed8;
+}

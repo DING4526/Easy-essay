@@ -1,10 +1,15 @@
+import os
 import warnings
+
+from configs import DATA_DIR
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv, find_dotenv
 from contextlib import asynccontextmanager
+from fastapi.staticfiles import StaticFiles
 
 # 加载环境变量
 load_dotenv(find_dotenv())
@@ -46,6 +51,9 @@ app.add_middleware(
 
 app.include_router(paper_router,prefix="/api")
 app.include_router(user_router,prefix="/api")
+
+app.mount("/uploads", StaticFiles(directory=os.path.join(DATA_DIR, "uploads")), name="Uploads")
+
 
 if __name__ == "__main__":
     import uvicorn

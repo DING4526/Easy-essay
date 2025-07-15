@@ -13,12 +13,7 @@ const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress-text');
 const papersGrid = document.getElementById('papers-grid');
 const refreshBtn = document.getElementById('refresh-papers');
-const paperSelect = document.getElementById('paper-select');
-const chatInput = document.getElementById('chat-input');
-const sendBtn = document.getElementById('send-btn');
-const chatMessages = document.getElementById('chat-messages');
-const modal = document.getElementById('paper-modal');
-const modalClose = document.getElementById('modal-close');
+
 const loading = document.getElementById('loading');
 const notification = document.getElementById('notification');
 
@@ -46,17 +41,12 @@ function initEventListeners() {
     refreshBtn.addEventListener('click', loadPapers);
 
     // 聊天功能
-    paperSelect.addEventListener('change', selectPaper);
+    //paperSelect.addEventListener('change', selectPaper);
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
+    console.log('sendBtn');
     sendBtn.addEventListener('click', sendMessage);
-
-    // 模态框
-    modalClose.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal();
-    });
 
     // 通知关闭
     document.getElementById('notification-close').addEventListener('click', hideNotification);
@@ -214,77 +204,84 @@ function getStatusText(status) {
     return statusMap[status] || status;
 }
 
-// 显示论文详情
+
 async function showPaperDetails(paperId) {
     try {
         const response = await fetch(`http://localhost:8000/api/papers/${paperId}`);
         const paper = await response.json();
 
-        // 填充模态框内容
-        document.getElementById('modal-title').textContent = paper.title || paper.original_filename;
-        document.getElementById('detail-title').textContent = paper.title || '未提取到标题';
-        document.getElementById('detail-authors').textContent = paper.authors || '未提取到作者信息';
-        document.getElementById('detail-upload-time').textContent = new Date(paper.upload_time).toLocaleString();
-        document.getElementById('detail-abstract').textContent = paper.abstract || '未提取到摘要';
-        document.getElementById('detail-summary').textContent = paper.summary || '未生成简明摘要';
-        document.getElementById('detail-key-content').textContent = paper.key_content || '未提取到关键内容';
-        document.getElementById('detail-translation').textContent = paper.translation || '未生成翻译';
-        document.getElementById('detail-terminology').textContent = paper.terminology || '未生成术语解释';
-        document.getElementById('detail-research-context').textContent = paper.research_context || '未生成研究脉络';
+        // 切换 tab 显示
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById('viewer-tab').classList.add('active');
 
-        modal.classList.add('active');
+        // 设置 PDF iframe
+        document.getElementById('pdf-frame').src = `http://localhost:8000/uploads/${encodeURIComponent(paper.filename || paper.original_filename)}`;
+
+        // 填充信息
+        //基本信息
+        /*document.getElementById('viewer-title').textContent = paper.title || '未提取标题';
+        document.getElementById('viewer-authors').textContent = paper.authors || '未提取作者';
+        document.getElementById('viewer-upload-time').textContent = new Date(paper.upload_time).toLocaleString();
+        //摘要
+        document.getElementById('viewer-abstract').textContent = paper.abstract || '暂无摘要';
+        //关键内容
+        document.getElementById('viewer-key-content').textContent = paper.key_content || '暂无关键内容';
+        //中文翻译
+        document.getElementById('viewer-translation').textContent = paper.translation || '未生成翻译';
+        //术语解释
+        document.getElementById('viewer-terminology').textContent = paper.terminology || '未生成术语解释';
+        //研究脉络
+        document.getElementById('viewer-research-context').textContent = paper.research_context || '未生成研究脉络'*/
+
+        //添加markdown渲染
+        //基本信息
+        document.getElementById('viewer-title').innerHTML = marked.parse(paper.title || '未提取标题');
+        document.getElementById('viewer-authors').innerHTML = marked.parse(paper.authors || '未提取作者');
+        document.getElementById('viewer-upload-time').textContent = new Date(paper.upload_time).toLocaleString(); //时间不需要
+        //摘要
+        document.getElementById('viewer-abstract').innerHTML = marked.parse(paper.abstract || '暂无摘要');
+        //关键内容
+        document.getElementById('viewer-key-content').innerHTML = marked.parse(paper.key_content || '暂无关键内容');
+        //中文翻译
+        document.getElementById('viewer-translation').innerHTML = marked.parse(paper.translation || '未生成翻译');
+        //术语解释
+        document.getElementById('viewer-terminology').innerHTML = marked.parse(paper.terminology || '未生成术语解释');
+        //研究脉络
+        document.getElementById('viewer-research-context').innerHTML = marked.parse(paper.research_context || '未生成研究脉络');
+
+        currentPaper = paperId;
+        // 绑定聊天输入框事件
+        document.getElementById('send-btn').onclick = sendMessage;
+        document.getElementById('chat-input').onkeypress = (e) => {
+            if (e.key === 'Enter') sendMessage();
+        };
     } catch (error) {
         showNotification('加载论文详情失败', 'error');
     }
 }
+document.addEventListener('DOMContentLoaded', () => {
+  const tabButtons = document.querySelectorAll('.viewer-tab-btn');
+  const sections = document.querySelectorAll('.viewer-section');
 
-// 关闭模态框
-function closeModal() {
-    modal.classList.remove('active');
-}
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
 
-// 加载聊天用的论文列表
-async function loadPapersForChat() {
-    try {
-        const response = await fetch('http://localhost:8000/api/papers?user_id=1');
-        const data = await response.json();
+      // 1. 切换按钮高亮
+      tabButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-        paperSelect.innerHTML = '<option value="">选择论文...</option>';
-        data.filter(p => p.processing_status === 'completed').forEach(paper => {
-            const option = document.createElement('option');
-            option.value = paper.id;
-            option.textContent = paper.title || paper.original_filename;
-            paperSelect.appendChild(option);
-        });
-    } catch (error) {
-        showNotification('加载论文列表失败', 'error');
-    }
-}
-
-// 选择论文进行聊天
-function selectPaper() {
-    const paperId = paperSelect.value;
-    if (paperId) {
-        currentPaper = paperId;
-        chatInput.disabled = false;
-        sendBtn.disabled = false;
-
-        // 清空聊天记录
-        chatMessages.innerHTML = `
-            <div class="welcome-message">
-                <i class="fas fa-robot"></i>
-                <p>已选择论文，您可以开始提问了！</p>
-            </div>
-        `;
-
-        // 加载聊天历史
-        loadChatHistory(paperId);
-    } else {
-        currentPaper = null;
-        chatInput.disabled = true;
-        sendBtn.disabled = true;
-    }
-}
+      // 2. 显示对应的内容块，隐藏其他
+      sections.forEach(sec => {
+        if (sec.dataset.section === target) {
+          sec.style.display = 'block';
+        } else {
+          sec.style.display = 'none';
+        }
+      });
+    });
+  });
+});
 
 // 加载聊天历史
 async function loadChatHistory(paperId) {
@@ -306,6 +303,10 @@ async function loadChatHistory(paperId) {
 
 // 发送消息
 async function sendMessage() {
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    //sendBtn.disabled = false; // 禁用发送按钮
+    console.log('发送消息');
     const question = chatInput.value.trim();
     if (!question || !currentPaper) return;
 
@@ -346,6 +347,7 @@ async function sendMessage() {
 
 // 添加消息到聊天界面
 function addMessage(content, sender, isLoading = false) {
+    const chatMessages = document.getElementById('chat-messages'); //确保每次重新获取
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}`;
 

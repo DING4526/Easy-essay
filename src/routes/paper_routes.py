@@ -16,6 +16,7 @@ from schemas.paper_schemas import *
 from schemas.chat_schemas import *
 
 from configs import DATA_DIR
+from services.tools import *
 
 router = APIRouter(prefix="/papers", tags=["papers"])
 
@@ -90,54 +91,70 @@ async def analyze_paper(paper_id: int, db: Session = Depends(get_db_session)):
         parsed_data = parser.parse_pdf(paper.id, paper.file_path)
         print(f"[ANALYZE] PDF parse finished")
 
-        key_sections = parser.extract_key_sections(parsed_data)
-        print(f"[ANALYZE] Extracted key sections: {list(key_sections.keys())}")
-
-        def _format_sections(sections: Dict[str, str]) -> str:
-            return "\n\n".join([f"## {k.capitalize()}\n{v.strip()}" for k, v in sections.items() if v.strip()])
-
-        key_sections_text = _format_sections(key_sections)
         ai_service = AIService()
 
         paper.title = parsed_data.get('title', paper.original_filename)
-        paper.authors = parsed_data.get('authors', '')
+        paper.authors = ', '.join(parsed_data.get('authors', []))
         paper.abstract = parsed_data.get('abstract', '')
 
-        print(f"[ANALYZE] Title: {paper.title}, Authors: {paper.authors}")
+        print(f"[ANALYZE] 已保存 paper.title: {paper.title}")
+        print(f"[ANALYZE] 已保存 paper.authors: {paper.authors}")
+        print(f"[ANALYZE] 已保存 paper.abstract: {paper.abstract[:100]}...")
 
         if paper.abstract and paper.title:
             paper.summary = ai_service.generate_summary(paper.abstract, paper.title)
-            print(f"[ANALYZE] Summary generated")
+            print(f"[ANALYZE] 已生成并保存 paper.summary")
         else:
             paper.summary = f"这是一篇关于{paper.title}的学术论文。"
 
-        if key_sections_text:
-            paper.key_content = ai_service.extract_key_content(key_sections_text, paper.title)
-            print(f"[ANALYZE] Key content extracted")
+        key_sections = extract_core_sections(parsed_data.get('sections',[]))
+
+        if key_sections:
+            paper.key_content = ai_service.extract_key_content(key_sections, paper.title)
+            print(f"[ANALYZE] 已生成并保存 paper.key_content")
         else:
-            paper.key_content = "关键内容提取功能需要更完整的论文结构。"
+            paper.key_content = "未提取到有效的key_sections"
 
         if paper.abstract:
             paper.translation = ai_service.translate_text(paper.abstract)
-            print(f"[ANALYZE] Abstract translated")
+            print(f"[ANALYZE] 已完成摘要翻译（目前是demo版本）")
         else:
-            paper.translation = "未找到摘要内容进行翻译。"
+            paper.translation = "未提取到有效的摘要内容"
 
         full_text = parsed_data.get('full_text', '')
         if full_text:
             paper.terminology = ai_service.explain_terminology(full_text[:2000])
-            print(f"[ANALYZE] Terminology explained")
+            print(f"[ANALYZE] 已生成术语解释")
         else:
-            paper.terminology = "术语解释功能需要更完整的文本内容。"
+            paper.terminology = "未提取到full_text文本内容。"
 
+        paper_references = ', '.join(parsed_data.get('references', []))
         paper.research_context = ai_service.analyze_research_context(
-            paper.title, paper.abstract, paper.key_content
+            paper.title, paper.abstract, paper.key_content, paper_references
         )
         print(f"[ANALYZE] Research context analyzed")
 
         # rag 构建
-        if full_text:
-            ai_service.setup_rag(full_text, paper.id)
+        # 首先，先提取引用的文章
+        references = extract_references_section(parsed_data)
+        titles = []
+        for title in references:
+            title = extract_reference_title(title)
+            titles.append(title)
+            # print(f"Reference title: {title}")
+
+        # 根据标题构建增强内容
+        rag_chunks = build_rag_chunks_from_titles(titles)
+
+        print(f"[ANALYZE] RAG chunks built: {len(rag_chunks)} items")
+        print(f"[ANALYZE] RAG chunks[0]: {rag_chunks[0] if rag_chunks else 'No chunks available'}")
+
+        # 拼接为一个整体string
+        augmented_full_text = full_text + "\n\n" + "\n\n".join(rag_chunks)
+        print(f"[RAG] augmented_full_text:\n{augmented_full_text}")
+
+        if augmented_full_text:
+            ai_service.setup_rag(augmented_full_text, paper.id)
             print(f"[ANALYZE] RAG setup completed")
 
         paper.processing_status = 'completed'

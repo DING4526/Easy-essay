@@ -21,6 +21,8 @@ class Paper(Base):
     translation = Column(Text)
     terminology = Column(Text)
     research_context = Column(Text)
+    s2_id = Column(String(100), nullable=True)  # Semantic Scholar Paper ID
+    related_papers_json = Column(Text, nullable=True) # 存储相关论文的JSON字符串
 
     processing_status = Column(String(50), default='uploaded')
 

@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 from datetime import datetime
@@ -134,6 +135,13 @@ async def analyze_paper(paper_id: int, db: Session = Depends(get_db_session)):
         )
         print(f"[ANALYZE] Research context analyzed")
 
+        # --- 新增：调用Semantic Scholar服务 ---
+        print(f"[ANALYZE] Fetching related papers from Semantic Scholar for title: {paper.title}")
+        related_data = ai_service.fetch_related_papers(paper.title)
+        paper.s2_id = related_data.get('s2_id')
+        paper.related_papers_json = related_data.get('related_papers_json')
+        print(f"[ANALYZE] Semantic Scholar data fetched. S2 ID: {paper.s2_id}")
+
         # rag 构建
         # 首先，先提取引用的文章
         references = extract_references_section(parsed_data)
@@ -206,14 +214,20 @@ async def chat_with_paper(paper_id: int, request_data: QuestionRequest, db: Sess
 
     ai_service = AIService()
     try:
-        result = ai_service.answer_question(request_data.question, paper_id)
+        result_dict = ai_service.agentic_answer(request_data.question, paper)
+        print(f"[CHAT] Agent result received: {result_dict}")
         print(f"[CHAT] LLM answer completed")
+
+        # --- 将结果字典序列化为 JSON 字符串存入数据库 ---
+        # 这样前端就能收到完整的结构化信息
+        answer_content = json.dumps(result_dict, ensure_ascii=False)
 
         chat_session = ChatSession(
             paper_id=paper_id,
             user_id=request_data.user_id,
             question=request_data.question,
-            answer=result['answer']
+            # answer=result['answer']
+            answer=answer_content
         )
         db.add(chat_session)
         db.commit()
@@ -226,13 +240,13 @@ async def chat_with_paper(paper_id: int, request_data: QuestionRequest, db: Sess
             paper_id=paper_id,
             user_id=request_data.user_id,
             question=request_data.question,
-            answer=result['answer'],
+            # answer=result['answer'],
+            answer=answer_content,
             timestamp=chat_session.timestamp,
         )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
-
 
 # ========== 聊天历史记录 ==========
 @router.get("/{paper_id}/chat/history", response_model=List[ChatResponse])

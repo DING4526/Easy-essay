@@ -19,6 +19,8 @@ class PaperResponse(BaseModel):
     terminology: Optional[str]
     research_context: Optional[str]
     processing_status: Optional[str]
+    s2_id: Optional[str]
+    related_papers_json: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
 

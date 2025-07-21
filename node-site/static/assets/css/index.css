@@ -622,3 +622,191 @@ body {
 .viewer-tab-btn.active:hover {
     background: #1d4ed8;
 }
+
+/* --- 新增: 图表容器样式 --- */
+.diagram-container {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-top: 1rem;
+    padding: 1rem;
+}
+
+.diagram-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.diagram-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: #343a40;
+}
+
+.btn-download {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background-color 0.2s;
+}
+
+.btn-download:hover {
+    background-color: #0056b3;
+}
+
+.mermaid {
+    text-align: center; /* 让图表居中显示 */
+}
+/* --- 新增：图表模态框样式 --- */
+.diagram-modal {
+    display: none; /* 默认隐藏 */
+    position: fixed; /* 固定定位，覆盖整个屏幕 */
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* 内容过长时可滚动 */
+    background-color: rgba(0,0,0,0.9); /* 半透明黑色背景 */
+    padding: 20px;
+    box-sizing: border-box;
+    justify-content: center; /* Flexbox 居中 */
+    align-items: center;    /* Flexbox 居中 */
+}
+
+.diagram-modal-content {
+    margin: auto;
+    display: block;
+    width: 95%;
+    height: 95%;
+    text-align: center;
+}
+
+/* 确保SVG在模态框内响应式缩放 */
+.diagram-modal-content svg {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    background-color: #fff; /* 给SVG一个白色背景，避免在暗色模式下看不清 */
+    border-radius: 8px;
+}
+
+/* 模态框关闭按钮 */
+.diagram-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.diagram-modal-close:hover,
+.diagram-modal-close:focus {
+    color: #bbb;
+    text-decoration: none;
+}
+
+/* --- 新增：优化图表操作按钮样式 --- */
+.diagram-actions {
+    display: flex;
+    gap: 10px; /* 按钮间距 */
+}
+
+.diagram-header .btn-action {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+.diagram-header .btn-action:hover {
+    background-color: #e0e0e0;
+}
+.diagram-header .btn-action i {
+    margin-right: 5px;
+}
+.mermaid {
+    display: flex;
+    justify-content: center;
+}
+
+
+/*登录注册表单*/
+.form-section {
+    text-align: center;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.form-section h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #212529;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    text-align: left;
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 16px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.form-group input:focus {
+    border-color: #86b7fe;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+}
+
+#user-info {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.user-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+

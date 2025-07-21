@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from models.db import get_db_session
 from models.user import User
 
@@ -67,3 +68,30 @@ def delete_user(user_id: int, db: Session = Depends(get_db_session)):
     db.delete(user)
     db.commit()
     return None
+
+
+# 登录界面
+@router.post("/login", response_model=UserResponse)
+def login_user(user_data: UserCreate, db: Session = Depends(get_db_session)):
+    user = db.query(User).filter(and_(User.email == user_data.email, User.username == user_data.username)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+
+    return UserResponse.model_validate(user)
+
+
+# 注册接口
+@router.post("/register", response_model=UserResponse)
+def register_user(user_data: UserCreate, db: Session = Depends(get_db_session)):
+    # 检查 email 是否存在
+    existing = db.query(User).filter(User.email == user_data.email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="该邮箱已注册")
+
+    # 创建新用户
+    user = User(username=user_data.username, email=user_data.email)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return UserResponse.model_validate(user)
+
